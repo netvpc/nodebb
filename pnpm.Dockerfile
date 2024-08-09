@@ -5,44 +5,50 @@ ENV TZ="Asia/Seoul"
 WORKDIR /usr/src/app/
 
 RUN apt-get update \
-  && apt-get -y --no-install-recommends install tini
+  && apt-get -y --no-install-recommends install tini jq moreutils
 
 RUN git clone --recurse-submodules -j8 --depth 1 https://github.com/NodeBB/NodeBB.git .
 
 RUN find . -mindepth 1 -maxdepth 1 -name '.*' ! -name '.' ! -name '..' -exec bash -c 'echo "Deleting {}"; rm -rf {}' \; \
   && rm -rf install/docker/entrypoint.sh \
   && rm -rf docker-compose.yml \
-  && rm -rf Dockerfile
-  ## && jq 'del(.resolutions)' install/package.json | sponge install/package.json
+  && rm -rf Dockerfile \
+  && jq 'del(.resolutions)' install/package.json | sponge install/package.json
 
 FROM node:lts-bookworm AS node_modules_touch
 
 ENV NODE_ENV=production \
     TZ="Asia/Seoul"
-
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable pnpm
 WORKDIR /usr/src/app/
 
 COPY --from=git /usr/src/app/install/package.json /usr/src/app/
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-  npm install \
+    pnpm install -r \
+    nodebb-plugin-markdown \
     @nodebb/nodebb-plugin-reactions \
     nodebb-plugin-adsense \
     nodebb-plugin-extended-markdown \
     nodebb-plugin-meilisearch \
     nodebb-plugin-question-and-answer \
     nodebb-plugin-sso-github \
-    ## nodebb-plugin-knowledge-base \
-  && npm install --package-lock-only --omit=dev \
-  && npm update --save
+    nconf
 
 FROM node:lts-bookworm-slim
+
+LABEL maintainer="NGINX Docker Maintainers <docker-maint@nginx.com>"
 
 ENV NGINX_VERSION=1.27.0
 ENV NJS_VERSION=0.8.4
 ENV NJS_RELEASE=2~bookworm
 ENV PKG_RELEASE=2~bookworm
-
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable pnpm
+WORKDIR /usr/src/app/
 ENV NODE_ENV=production \
     NPM_CONFIG_UPDATE_NOTIFIER="false" \
     DAEMON=false \
