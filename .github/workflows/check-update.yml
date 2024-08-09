@@ -1,0 +1,44 @@
+name: Check for updates
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+  
+env:
+  GH_TOKEN: ${{ github.token }}
+  
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
+      actions: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          LOCAL_VER=$(git -c 'versionsort.suffix=-' \
+              ls-remote --exit-code --refs --sort='version:refname' --tags https://github.com/netvpc/nodebb.git \
+              | tail --lines=1 \
+              | cut --delimiter='/' --fields=3)
+          RELEASE_VER=$(git -c 'versionsort.suffix=-' \
+              ls-remote --exit-code --refs --sort='version:refname' --tags https://github.com/nodebb/nodebb.git \
+              | tail --lines=1 \
+              | cut --delimiter='/' --fields=3)
+          if [[ $RELEASE_VER != $LOCAL_VER ]]; then
+              echo "Local version: $LOCAL_VER"
+              echo "Latest upstream version: $RELEASE_VER"
+              echo "Updating to latest version..."
+              git tag ${RELEASE_VER}
+              git push origin ${RELEASE_VER}
+              gh workflow run docker-publish.yml --ref ${RELEASE_VER}
+          else
+              echo "No updates available..."
+          fi
