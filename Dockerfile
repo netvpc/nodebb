@@ -32,6 +32,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     nodebb-plugin-meilisearch \
     nodebb-plugin-question-and-answer \
     nodebb-plugin-sso-github \
+    nodebb-plugin-meilisearch \
     ## nodebb-plugin-knowledge-base \
   && npm install --package-lock-only --omit=dev \
   && npm update --save
