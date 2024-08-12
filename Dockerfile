@@ -24,7 +24,7 @@ WORKDIR /usr/src/app/
 
 COPY --from=git /usr/src/app/install/package.json /usr/src/app/
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+RUN --mount=type=cache,id=npm-cache,target=/root/.npm \
   npm install \
     @nodebb/nodebb-plugin-reactions \
     nodebb-plugin-adsense \
@@ -32,8 +32,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     nodebb-plugin-meilisearch \
     nodebb-plugin-question-and-answer \
     nodebb-plugin-sso-github \
-    nodebb-plugin-meilisearch \
-    ## nodebb-plugin-knowledge-base \
+    https://github.com/navystack/nodebb-plugin-dbsearch-rsjieba.git \
   && npm install --package-lock-only --omit=dev \
   && npm update --save
 
