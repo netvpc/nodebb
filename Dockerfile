@@ -13,7 +13,6 @@ RUN find . -mindepth 1 -maxdepth 1 -name '.*' ! -name '.' ! -name '..' -exec bas
   && rm -rf install/docker/entrypoint.sh \
   && rm -rf docker-compose.yml \
   && rm -rf Dockerfile
-  ## && jq 'del(.resolutions)' install/package.json | sponge install/package.json
 
 FROM node:lts-bookworm AS node_modules_touch
 
@@ -32,7 +31,7 @@ RUN --mount=type=cache,id=npm-cache,target=/root/.npm \
     nodebb-plugin-meilisearch \
     nodebb-plugin-question-and-answer \
     nodebb-plugin-sso-github \
-    https://github.com/navystack/nodebb-plugin-dbsearch-rsjieba.git \
+    https://github.com/NavyStack/nodebb-plugin-dbsearch-korean.git \
   && npm install --package-lock-only --omit=dev \
   && npm update --save
 
@@ -50,7 +49,8 @@ ENV NODE_ENV=production \
     USER=nginx \
     UID=1001 \
     GID=1001 \
-    TZ="Asia/Seoul"
+    TZ="Asia/Seoul" \
+    PATH="/opt/mecab/bin:${PATH}"
 
 RUN set -x \
 # create nginx user/group first, to be consistent throughout docker variants
@@ -185,6 +185,18 @@ RUN set -eux; \
   # verify that the binary works
       gosu --version; \
       gosu nobody true
+
+RUN set -eux; \
+        dpkgArch="$(dpkg --print-architecture)"; \
+        case "${dpkgArch##*-}" in \
+            amd64) mecabArch='x86_64';; \
+            arm64) mecabArch='aarch64';; \
+            *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \
+        esac; \
+        mecabKoUrl="https://github.com/Pusnow/mecab-ko-msvc/releases/download/release-0.999/mecab-ko-linux-${mecabArch}.tar.gz"; \
+        mecabKoDicUrl="https://github.com/Pusnow/mecab-ko-msvc/releases/download/release-0.999/mecab-ko-dic.tar.gz"; \
+        wget "${mecabKoUrl}" -O - | tar -xzvf - -C /opt; \
+        wget "${mecabKoDicUrl}" -O - | tar -xzvf - -C /opt/mecab/share
   
 COPY --link --from=node_modules_touch /usr/src/app/ /usr/src/app/
 COPY --link --from=git /usr/src/app/ /usr/src/app/
