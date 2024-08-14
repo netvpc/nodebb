@@ -28,14 +28,13 @@ RUN --mount=type=cache,id=npm-cache,target=/root/.npm \
     @nodebb/nodebb-plugin-reactions \
     nodebb-plugin-adsense \
     nodebb-plugin-extended-markdown \
-    nodebb-plugin-meilisearch \
     nodebb-plugin-question-and-answer \
     nodebb-plugin-sso-github \
     https://github.com/NavyStack/nodebb-plugin-dbsearch-korean.git \
   && npm install --package-lock-only --omit=dev \
   && npm update --save
 
-FROM node:lts-bookworm-slim
+FROM node:lts-bookworm-slim AS final
 
 ENV NGINX_VERSION=1.27.0
 ENV NJS_VERSION=0.8.4
@@ -176,6 +175,16 @@ RUN set -eux; \
       gpgconf --kill all; \
       rm -rf "$GNUPGHOME" /usr/local/bin/gosu.asc; \
       \
+        dpkgArch="$(dpkg --print-architecture)"; \
+        case "${dpkgArch##*-}" in \
+            amd64) mecabArch='x86_64';; \
+            arm64) mecabArch='aarch64';; \
+            *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \
+        esac; \
+        mecabKoUrl="https://github.com/Pusnow/mecab-ko-msvc/releases/download/release-0.999/mecab-ko-linux-${mecabArch}.tar.gz"; \
+        mecabKoDicUrl="https://github.com/Pusnow/mecab-ko-msvc/releases/download/release-0.999/mecab-ko-dic.tar.gz"; \
+        wget "${mecabKoUrl}" -O - | tar -xzvf - -C /opt; \
+        wget "${mecabKoDicUrl}" -O - | tar -xzvf - -C /opt/mecab/share && \
   # clean up fetch dependencies
       apt-mark auto '.*' > /dev/null; \
       [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark; \
@@ -186,17 +195,6 @@ RUN set -eux; \
       gosu --version; \
       gosu nobody true
 
-RUN set -eux; \
-        dpkgArch="$(dpkg --print-architecture)"; \
-        case "${dpkgArch##*-}" in \
-            amd64) mecabArch='x86_64';; \
-            arm64) mecabArch='aarch64';; \
-            *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \
-        esac; \
-        mecabKoUrl="https://github.com/Pusnow/mecab-ko-msvc/releases/download/release-0.999/mecab-ko-linux-${mecabArch}.tar.gz"; \
-        mecabKoDicUrl="https://github.com/Pusnow/mecab-ko-msvc/releases/download/release-0.999/mecab-ko-dic.tar.gz"; \
-        wget "${mecabKoUrl}" -O - | tar -xzvf - -C /opt; \
-        wget "${mecabKoDicUrl}" -O - | tar -xzvf - -C /opt/mecab/share
   
 COPY --link --from=node_modules_touch /usr/src/app/ /usr/src/app/
 COPY --link --from=git /usr/src/app/ /usr/src/app/
