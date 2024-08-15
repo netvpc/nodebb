@@ -216,4 +216,7 @@ EXPOSE 8080
 
 STOPSIGNAL SIGQUIT
 
+HEALTHCHECK --interval=10s --timeout=10s --start-period=10s --retries=5 \
+  CMD curl -I http://localhost:4567/ || exit 1
+
 CMD ["start.sh"]

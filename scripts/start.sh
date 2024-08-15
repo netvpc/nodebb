@@ -93,9 +93,9 @@ start_forum() {
   }
 
   case "$PACKAGE_MANAGER" in
-    yarn) gosu $DEFAULT_USER yarn start --config="$config" --no-silent --no-daemon ;;
-    npm) gosu $DEFAULT_USER npm start -- --config="$config" --no-silent --no-daemon ;;
-    pnpm) gosu $DEFAULT_USER pnpm start -- --config="$config" --no-silent --no-daemon ;;
+    yarn) gosu $DEFAULT_USER node loader.js --config="$config" --no-silent --no-daemon ;;
+    npm) gosu $DEFAULT_USER node loader.js --config="$config" --no-silent --no-daemon ;;
+    pnpm) gosu $DEFAULT_USER node loader.js --config="$config" --no-silent --no-daemon ;;
     *)
       echo "Unknown package manager: $PACKAGE_MANAGER"
       exit 1
