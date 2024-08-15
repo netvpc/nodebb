@@ -31,7 +31,6 @@ RUN --mount=type=cache,id=npm-cache,target=/root/.npm \
     nodebb-plugin-question-and-answer \
     nodebb-plugin-sso-github \
     https://github.com/NavyStack/nodebb-plugin-dbsearch-korean.git \
-    nodebb-plugin-dbsearch-rsjieba \
   && npm install --package-lock-only --omit=dev \
   && npm update --save
 
