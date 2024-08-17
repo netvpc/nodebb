@@ -11,7 +11,7 @@ set_defaults() {
   export PACKAGE_MANAGER="${PACKAGE_MANAGER:-npm}"
   export OVERRIDE_UPDATE_LOCK="${OVERRIDE_UPDATE_LOCK:-false}"
 
-  export DEFAULT_USER="${CONTAINER_USER:-nginx}"
+  export DEFAULT_USER="${CONTAINER_USER:-nodebb}"
   export HOME_DIR="/home/$DEFAULT_USER"
   export APP_DIR="/usr/src/app/"
   export HOME="$HOME_DIR"

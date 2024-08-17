@@ -1,0 +1,21 @@
+{
+    "mongo": {
+      "host": "mongo",
+      "port": 27017,
+      "database": "navystack-mongo",
+      "username": "navystack-mongo",
+      "password": "oVvzozYfCgZXJ7373Y9VvmXh0J8WyF"
+    },
+    "redis": {
+      "host": "redis",
+      "port": 6379,
+      "database": 0
+    },
+    "postgres": {
+      "host": "postgres",
+      "port": 5432,
+      "database": "postgres",
+      "username": "postgres",
+      "password": "EPpQ6O1FA##3iUiC7MvBJzg#OhZnzY553"
+    }
+  }
