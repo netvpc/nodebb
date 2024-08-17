@@ -15,7 +15,7 @@ ENV GOSU_VERSION=1.17 \
 
 RUN dnf install -y --setopt=install_weak_deps=False \
     nginx nginx-all-modules	\
-    nodejs20 nodejs20-npm git wget \
+    nodejs20 nodejs20-npm git wget gcc-c++ \
     && dnf install -y --allowerasing gnupg2-full \
     && rm -rf /var/cache/dnf \
     && ln -s /usr/bin/node-20 /usr/bin/node \
@@ -88,7 +88,7 @@ ENV GOSU_VERSION=1.17 \
 
 RUN dnf install -y --setopt=install_weak_deps=False \
     nginx nginx-all-modules	\
-    nodejs20 nodejs20-npm git wget \
+    nodejs20 nodejs20-npm git wget gcc-c++ \
     && dnf install -y --allowerasing gnupg2-full \
     && rm -rf /var/cache/dnf \
     && ln -s /usr/bin/node-20 /usr/bin/node \
