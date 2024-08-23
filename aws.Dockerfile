@@ -1,4 +1,4 @@
-FROM amazonlinux:2023.5.20240805.0 AS base
+FROM amazonlinux:2023.5.20240819.0 AS base
 
 SHELL ["/bin/bash", "-c"]
 
@@ -73,7 +73,7 @@ RUN rpmArch="$(rpm --query --queryformat='%{ARCH}' rpm)" && \
     wget "${mecabKoUrl}" -O - | tar -xzvf - -C /opt && \
     wget "${mecabKoDicUrl}" -O - | tar -xzvf - -C /opt/mecab/share
 
-FROM amazonlinux:2023.5.20240805.0 AS final
+FROM amazonlinux:2023.5.20240819.0 AS final
 
 ENV GOSU_VERSION=1.17 \
     NODE_ENV=production \
