@@ -97,9 +97,6 @@ COPY scripts/start.sh /usr/local/bin/
 VOLUME ["/usr/src/app/node_modules", "/usr/src/app/build", "/usr/src/app/public/uploads", "/opt/config/"]
 ENTRYPOINT [ "tini", "--", "start.sh" ]
 
-EXPOSE 8080
+EXPOSE 4567
 
 STOPSIGNAL SIGQUIT
-
-HEALTHCHECK --interval=10s --timeout=10s --start-period=10s --retries=5 \
-  CMD curl -I http://localhost:4567/ || exit 1
