@@ -11,7 +11,7 @@ set_defaults() {
   export PACKAGE_MANAGER="${PACKAGE_MANAGER:-npm}"
   export OVERRIDE_UPDATE_LOCK="${OVERRIDE_UPDATE_LOCK:-false}"
 
-  export DEFAULT_USER="${CONTAINER_USER:-nodebb}"
+  export DEFAULT_USER="${CONTAINER_USER:-node}"
   export HOME_DIR="/home/$DEFAULT_USER"
   export APP_DIR="/usr/src/app/"
   export HOME="$HOME_DIR"
@@ -118,18 +118,22 @@ start_installation_session() {
 main() {
   set_defaults
   if [ "$(id -u)" = '0' ]; then
-    if [ -n "$UID" ] && [ -n "$GID" ]; then
+  if [ -n "$UID" ] && [ -n "$GID" ]; then
+    if id -u "$UID" >/dev/null 2>&1 || getent group "$GID" >/dev/null 2>&1; then
+      echo "UID $UID or GID $GID already exists. Skipping user/group modification."
+    else
       echo "Using provided UID = $UID / GID = $GID"
       usermod -u "$UID" $DEFAULT_USER
       groupmod -g "$GID" $DEFAULT_USER
-    else
-      echo "Using Default UID:GID (1001:1001)"
     fi
-
-    echo "Starting with UID/GID: $(id -u "$DEFAULT_USER")/$(getent group "$DEFAULT_USER" | cut -d ":" -f 3)"
-    install -d -o $DEFAULT_USER -g $DEFAULT_USER -m 700 "$HOME_DIR" "$APP_DIR" "$CONFIG_DIR"
-    chown -R "$DEFAULT_USER:$DEFAULT_USER" "$HOME_DIR" "$APP_DIR" "$CONFIG_DIR" "$BUILD_DIR"
+  else
+    echo "Using Default UID:GID (1000:1000)"
   fi
+
+  echo "Starting with UID/GID: $(id -u "$DEFAULT_USER")/$(getent group "$DEFAULT_USER" | cut -d ":" -f 3)"
+  install -d -o $DEFAULT_USER -g $DEFAULT_USER -m 700 "$HOME_DIR" "$APP_DIR" "$CONFIG_DIR"
+  chown -R "$DEFAULT_USER:$DEFAULT_USER" "$HOME_DIR" "$APP_DIR" "$CONFIG_DIR" "$BUILD_DIR"
+fi
 
   check_directory "$CONFIG_DIR"
   copy_or_link_files /usr/src/app "$CONFIG_DIR" "$PACKAGE_MANAGER"
@@ -146,7 +150,7 @@ main() {
 
   fi
 }
-/usr/sbin/nginx "-g" "daemon off;"&
+
 main "$@"
 
 
