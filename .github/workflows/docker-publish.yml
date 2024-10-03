@@ -30,6 +30,12 @@ jobs:
         with:
           ref: ${{ env.RELEASE_VERSION }}
 
+      - name: Set Clean Version
+        id: set-clean-version
+        run: |
+          CLEAN_VERSION="${{ env.RELEASE_VERSION }}"
+          echo "VERSION=${CLEAN_VERSION}" >> $GITHUB_ENV
+
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
       - name: Install cosign
@@ -86,6 +92,8 @@ jobs:
         with:
           context: .
           file: Dockerfile
+          build-args: |
+            VERSION=${{ env.VERSION }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
