@@ -18,4 +18,3 @@ volumes:
   nodebb-build:
   nodebb-uploads:
   nodebb-modules:
-  mongo-data:
