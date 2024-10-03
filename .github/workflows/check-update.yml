@@ -31,21 +31,17 @@ jobs:
               | grep -E 'refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$' \
               | tail --lines=1 \
               | cut --delimiter='/' --fields=3)
-
           RELEASE_VER=$(git -c 'versionsort.suffix=-' \
               ls-remote --exit-code --refs --sort='version:refname' --tags https://github.com/nodebb/nodebb.git \
               | grep -E 'refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$' \
               | tail --lines=1 \
               | cut --delimiter='/' --fields=3)
-
           echo "Local version: $LOCAL_VER"
           echo "Latest upstream version: $RELEASE_VER"
-
           if [[ -z "$RELEASE_VER" || -z "$LOCAL_VER" ]]; then
               echo "Error: Could not fetch versions"
               exit 1
           fi
-
           if [[ $(echo -e "$RELEASE_VER\n$LOCAL_VER" | sort -V | head -n1) != "$RELEASE_VER" ]]; then
               echo "Updating to latest version $RELEASE_VER..."
               if git rev-parse "refs/tags/${RELEASE_VER}" >/dev/null 2>&1; then
