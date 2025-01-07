@@ -40,7 +40,7 @@ jobs:
       # https://github.com/sigstore/cosign-installer
       - name: Install cosign
         if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da
+        uses: sigstore/cosign-installer@e11c0892438d2c0a48e49dee376e4883f10f2e59
         with:
           cosign-release: 'v2.2.4'
 
