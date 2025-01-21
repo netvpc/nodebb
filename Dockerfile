@@ -27,7 +27,7 @@ RUN --mount=type=cache,id=npm-cache,target=/root/.npm \
   npm install \
     @nodebb/nodebb-plugin-reactions \
     nodebb-plugin-adsense \
-    nodebb-plugin-extended-markdown \
+    https://github.com/fvoci/nodebb-plugin-extended-markdown.git \
     nodebb-plugin-question-and-answer \
     nodebb-plugin-sso-github \
     https://github.com/NavyStack/nodebb-plugin-dbsearch-korean.git \
