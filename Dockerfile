@@ -30,7 +30,7 @@ RUN --mount=type=cache,id=npm-cache,target=/root/.npm \
     https://github.com/fvoci/nodebb-plugin-extended-markdown.git \
     nodebb-plugin-question-and-answer \
     nodebb-plugin-sso-github \
-    https://github.com/NavyStack/nodebb-plugin-dbsearch-korean.git \
+    https://github.com/netvpc/nodebb-plugin-dbsearch-korean.git \
   && npm install --package-lock-only --omit=dev \
   && npm update --save
 
