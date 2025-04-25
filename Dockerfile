@@ -49,45 +49,46 @@ ENV NODE_ENV=production \
 WORKDIR /usr/src/app/
 
 ENV GOSU_VERSION=1.17
-RUN set -eux; \
-  # save list of currently installed packages for later so we can clean up
-      savedAptMark="$(apt-mark showmanual)"; \
-      apt-get update; \
-      apt-get install -y --no-install-recommends ca-certificates gnupg wget; \
-      rm -rf /var/lib/apt/lists/*; \
-      \
-      dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
-      wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch"; \
-      wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc"; \
-      \
-  # verify the signature
-      export GNUPGHOME="$(mktemp -d)"; \
-      gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; \
-      gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; \
-      gpgconf --kill all; \
-      rm -rf "$GNUPGHOME" /usr/local/bin/gosu.asc; \
-      \
-        dpkgArch="$(dpkg --print-architecture)"; \
-        case "${dpkgArch##*-}" in \
-            amd64) mecabArch='x86_64';; \
-            arm64) mecabArch='aarch64';; \
-            *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \
-        esac; \
-        mecabKoUrl="https://github.com/Pusnow/mecab-ko-msvc/releases/download/release-0.999/mecab-ko-linux-${mecabArch}.tar.gz"; \
-        mecabKoDicUrl="https://github.com/Pusnow/mecab-ko-msvc/releases/download/release-0.999/mecab-ko-dic.tar.gz"; \
-        wget "${mecabKoUrl}" -O - | tar -xzvf - -C /opt; \
-        wget "${mecabKoDicUrl}" -O - | tar -xzvf - -C /opt/mecab/share && \
-  # clean up fetch dependencies
-      apt-mark auto '.*' > /dev/null; \
-      [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark; \
-      apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
-      \
-      chmod +x /usr/local/bin/gosu; \
-  # verify that the binary works
-      gosu --version; \
-      gosu nobody true
 
-  
+RUN set -eux; \
+    savedAptMark="$(apt-mark showmanual)"; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        gnupg \
+        wget \
+        curl; \
+    rm -rf /var/lib/apt/lists/*; \
+    \
+    dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
+    wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch"; \
+    wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc"; \
+    \
+    export GNUPGHOME="$(mktemp -d)"; \
+    gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; \
+    gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; \
+    gpgconf --kill all; \
+    rm -rf "$GNUPGHOME" /usr/local/bin/gosu.asc; \
+    \
+    dpkgArch="$(dpkg --print-architecture)"; \
+    case "${dpkgArch##*-}" in \
+        amd64) mecabArch='x86_64';; \
+        arm64) mecabArch='aarch64';; \
+        *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \
+    esac; \
+    mecabKoUrl="https://github.com/Pusnow/mecab-ko-msvc/releases/download/release-0.999/mecab-ko-linux-${mecabArch}.tar.gz"; \
+    mecabKoDicUrl="https://github.com/Pusnow/mecab-ko-msvc/releases/download/release-0.999/mecab-ko-dic.tar.gz"; \
+    wget "${mecabKoUrl}" -O - | tar -xzvf - -C /opt; \
+    wget "${mecabKoDicUrl}" -O - | tar -xzvf - -C /opt/mecab/share; \
+    \
+    apt-mark auto '.*' > /dev/null; \
+    [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark ca-certificates wget curl; \
+    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
+    \
+    chmod +x /usr/local/bin/gosu; \
+    gosu --version; \
+    gosu nobody true
+
 COPY --chown=1000:1000 --from=node_modules_touch /usr/src/app/ /usr/src/app/
 COPY --chown=1000:1000 --from=git /usr/src/app/ /usr/src/app/
 COPY --chown=1000:1000 --from=git /usr/src/app/install/docker/setup.json /usr/src/app/setup.json
@@ -98,5 +99,8 @@ VOLUME ["/usr/src/app/node_modules", "/usr/src/app/build", "/usr/src/app/public/
 ENTRYPOINT [ "tini", "--", "start.sh" ]
 
 EXPOSE 4567
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:4567/ || exit 1
 
 STOPSIGNAL SIGQUIT
