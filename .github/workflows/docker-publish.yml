@@ -56,7 +56,7 @@ jobs:
       # Login to GitHub Container Registry (GHCR)
       - name: Log into GitHub Container Registry (GHCR)
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@6d4b68b490aef8836e8fb5e50ee7b3bdfa5894f0
+        uses: docker/login-action@3d100841f68d4548bf57e52eb27bd33ec5069f55
         with:
           registry: ${{ env.REGISTRY_GHCR }}
           username: ${{ github.actor }}
@@ -65,7 +65,7 @@ jobs:
       # Login to Docker Hub
       - name: Log into Docker Hub
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@6d4b68b490aef8836e8fb5e50ee7b3bdfa5894f0
+        uses: docker/login-action@3d100841f68d4548bf57e52eb27bd33ec5069f55
         with:
           registry: ${{ env.REGISTRY_DOCKERHUB }}
           username: ${{ secrets.DOCKER_HUB_USER }}
