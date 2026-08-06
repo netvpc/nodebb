@@ -42,7 +42,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: sigstore/cosign-installer@e40248c492a99ad409432e2ea978d7a2811f2e1f
         with:
-          cosign-release: 'v2.2.4'
+          cosign-release: 'v2.6.5'
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
